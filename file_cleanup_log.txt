@@ -131,3 +131,4 @@ mci_paper/
 ## 3. 보존 대상 (판단 애매한 파일들)
 - site/.hugo_build.lock : Hugo 빌드 락 파일 (임시 파일이지만 보존)
 - blog/.hugo_build.lock : 구 Hugo 빌드 락 파일
+"???? ?? ? GitHub Pages ?? ??: $(date)" 

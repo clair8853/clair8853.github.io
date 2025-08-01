@@ -1,59 +1,63 @@
-name: Deploy Hugo Blog
+# GitHub Actions 워크플로우 비활성화됨
+# 이 프로젝트는 개인 연구용 도구로, 외부 배포하지 않습니다.
 
-on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: '0 22 * * *'  # 매일 JST 07:00 (UTC 22:00)
+# name: Deploy Hugo Blog (DISABLED)
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          fetch-depth: 0
+# on:
+#   push:
+#     branches:
+#       - main
+#   schedule:
+#     - cron: '0 22 * * *'  # 매일 JST 07:00 (UTC 22:00)
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#         with:
+#           submodules: true
+#           fetch-depth: 0
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+#       - name: Setup Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.11'
 
-      - name: Update Blog Content
-        env:
-          PUBMED_API_KEY: ${{ secrets.PUBMED_API_KEY }}
-          PUBMED_EMAIL: ${{ secrets.PUBMED_EMAIL }}
-        run: |
-          python main.py --daily
-          python step6_test_blog.py
-          mkdir -p site/content/posts/
-          mkdir -p site/static/images/
-          cp output/mci-blog-*.md site/content/posts/ || echo "No blog posts to copy"
-          cp output/*_*.png site/static/images/ || echo "No images to copy"
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
 
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
-        with:
-          hugo-version: 'latest'
-          extended: true
+#       - name: Update Blog Content
+#       - name: Update Blog Content
+#         env:
+#           PUBMED_API_KEY: ${{ secrets.PUBMED_API_KEY }}
+#           PUBMED_EMAIL: ${{ secrets.PUBMED_EMAIL }}
+#         run: |
+#           python main.py --daily
+#           python step6_test_blog.py
+#           mkdir -p site/content/posts/
+#           mkdir -p site/static/images/
+#           cp output/mci-blog-*.md site/content/posts/ || echo "No blog posts to copy"
+#           cp output/*_*.png site/static/images/ || echo "No images to copy"
 
-      - name: Build
-        working-directory: ./site
-        run: hugo --minify
+#       - name: Setup Hugo
+#         uses: peaceiris/actions-hugo@v2
+#         with:
+#           hugo-version: 'latest'
+#           extended: true
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site/public
-          publish_branch: gh-pages
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Deploy: ${{ github.event.head_commit.message }}'
+#       - name: Build
+#         working-directory: ./site
+#         run: hugo --minify
+
+#       - name: Deploy
+#         uses: peaceiris/actions-gh-pages@v3
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: ./site/public
+#           publish_branch: gh-pages
+#           user_name: 'github-actions[bot]'
+#           user_email: 'github-actions[bot]@users.noreply.github.com'
+#           commit_message: 'Deploy: ${{ github.event.head_commit.message }}'

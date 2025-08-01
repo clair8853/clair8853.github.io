@@ -36,57 +36,78 @@ class MCIPapersPipeline:
             return yaml.safe_load(f)
     
     def run_daily_update(self):
-        """일일 업데이트를 실행합니다."""
+        """일일 논문 수집 업데이트를 실행합니다."""
         try:
-            self.logger.info("Starting daily update...")
+            self.logger.info("Starting daily paper collection...")
             
             # 새로운 논문 수집
             papers = self.crawler.search_papers(days_back=1)
             self.logger.info(f"Found {len(papers)} new papers")
             
             # 데이터베이스에 저장
+            added_count = 0
             for paper in papers:
                 success = self.db_manager.add_paper(paper)
-                if not success:
+                if success:
+                    added_count += 1
+                else:
                     self.logger.warning(f"Failed to add paper: {paper['pmid']}")
             
-            # 트렌드 분석 및 리포트 생성
+            self.logger.info(f"Successfully added {added_count} new papers to database")
+            
+            # 트렌드 분석 결과 저장 (선택적)
             current_date = datetime.now().strftime('%Y%m%d')
             
-            # 카테고리 트렌드 플롯
-            trend_plot_path = os.path.join(self.output_path, f'category_trends_{current_date}.png')
-            self.analyzer.plot_category_trends(months=12, save_path=trend_plot_path)
-            
-
+            # 카테고리 트렌드 플롯 생성
+            try:
+                trend_plot_path = os.path.join(self.output_path, f'category_trends_{current_date}.png')
+                self.analyzer.plot_category_trends(months=12, save_path=trend_plot_path)
+                self.logger.info(f"Trend plot saved: {trend_plot_path}")
+            except Exception as e:
+                self.logger.warning(f"Failed to generate trend plot: {str(e)}")
             
             # 트렌드 리포트 생성
-            report = self.analyzer.generate_trend_report(months=12)
+            try:
+                report = self.analyzer.generate_trend_report(months=12)
+                report_path = os.path.join(self.output_path, f'trend_report_{current_date}.txt')
+                with open(report_path, 'w', encoding='utf-8') as f:
+                    f.write(report)
+                self.logger.info(f"Trend report saved: {report_path}")
+            except Exception as e:
+                self.logger.warning(f"Failed to generate trend report: {str(e)}")
             
-            # 블로그 포스트 생성
-            from scripts.blog_generator import generate_blog_post
-            categories = list(self.db_manager.get_all_categories())
-            latest_papers = self.db_manager.get_all_papers()[-20:]  # 최신 20개 논문
+            # 데이터베이스 상태 출력
+            total_papers = len(self.db_manager.get_all_papers())
+            self.logger.info(f"Total papers in database: {total_papers}")
             
-            blog_post = generate_blog_post(
-                trend_report=report,
-                date=current_date,
-                categories=categories,
-                papers=latest_papers
-            )
-            
-            # 블로그 포스트 저장
-            blog_dir = os.path.join(self.base_path, 'blog', 'content', 'posts')
-            os.makedirs(blog_dir, exist_ok=True)
-            post_path = os.path.join(blog_dir, f'trend-report-{current_date}.md')
-            with open(post_path, 'w', encoding='utf-8') as f:
-                f.write(blog_post)
-                
-            self.logger.info(f"Blog post created: {post_path}")
-            
-            self.logger.info("Daily update completed successfully")
+            self.logger.info("Daily paper collection completed successfully")
             
         except Exception as e:
             self.logger.error(f"Error during daily update: {str(e)}")
+    
+    def run_collection_test(self):
+        """논문 수집 테스트를 실행합니다."""
+        try:
+            self.logger.info("Starting collection test...")
+            
+            # 최근 7일간 논문 수집 테스트
+            papers = self.crawler.search_papers(days_back=7)
+            self.logger.info(f"Found {len(papers)} papers in last 7 days")
+            
+            # 몇 개 샘플 출력
+            for i, paper in enumerate(papers[:3]):
+                self.logger.info(f"Sample paper {i+1}: {paper['title'][:100]}...")
+            
+            # 데이터베이스 상태 확인
+            total_papers = len(self.db_manager.get_all_papers())
+            categories = self.db_manager.get_all_categories()
+            
+            self.logger.info(f"Database status:")
+            self.logger.info(f"  - Total papers: {total_papers}")
+            self.logger.info(f"  - Categories: {', '.join(categories)}")
+            
+        except Exception as e:
+            self.logger.error(f"Error during collection test: {str(e)}")
     
     def start_scheduler(self):
         """스케줄러를 시작합니다."""
@@ -108,19 +129,29 @@ class MCIPapersPipeline:
 def main():
     """메인 실행 함수"""
     import argparse
-    parser = argparse.ArgumentParser(description='MCI Papers Pipeline')
-    parser.add_argument('--daily', action='store_true', help='Run daily update once')
-    parser.add_argument('--scheduler', action='store_true', help='Start scheduler')
+    parser = argparse.ArgumentParser(description='MCI Papers Research Tool')
+    parser.add_argument('--daily', action='store_true', help='Run daily paper collection')
+    parser.add_argument('--test', action='store_true', help='Test paper collection')
+    parser.add_argument('--scheduler', action='store_true', help='Start scheduler for automatic collection')
     args = parser.parse_args()
     
     pipeline = MCIPapersPipeline()
     
     if args.daily:
         pipeline.run_daily_update()
+    elif args.test:
+        pipeline.run_collection_test()
     elif args.scheduler:
         pipeline.start_scheduler()
     else:
-        parser.print_help()
+        print("MCI Papers Research Tool")
+        print("사용법:")
+        print("  --daily     : 일일 논문 수집 실행")
+        print("  --test      : 논문 수집 테스트")
+        print("  --scheduler : 자동 수집 스케줄러 시작")
+        print("\n데이터 확인:")
+        print("  python desktop_gui.py  : GUI로 논문 탐색")
+        print("  python console_viewer.py : 콘솔에서 논문 확인")
 
 if __name__ == "__main__":
     main()
