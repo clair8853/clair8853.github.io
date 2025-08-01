@@ -11,15 +11,18 @@ ENV/
 .vscode/
 *.code-workspace
 
-# Project specific
-data/*.db
-data/*.csv
-logs/*.log
-output/*.png
-output/*.md
+# Local development
+GITHUB_SETUP.md
+data/
+logs/
+output/
 
-# Hugo
+# Hugo generated files
 blog/public/
 blog/resources/_gen/
 blog/.hugo_build.lock
-GITHUB_SETUP.md 
+
+# Temporary files
+*.tmp
+*.bak
+*.swp 
