@@ -22,6 +22,9 @@ class MCIPapersGUI:
         self.root.title("🧠 MCI 논문 데이터베이스")
         self.root.geometry("1200x800")
         
+        # 언어 설정
+        self.current_language = 'korean'  # 'korean' or 'english'
+        
         # 데이터베이스 연결
         try:
             self.db_manager = DatabaseManager('data/mci_papers.db')
@@ -33,6 +36,7 @@ class MCIPapersGUI:
         
         self.setup_ui()
         self.refresh_papers_list()
+        self.update_translation_stats()
     
     def setup_ui(self):
         # 메인 프레임
@@ -58,7 +62,25 @@ class MCIPapersGUI:
         ttk.Label(stats_frame, text=f"총 논문 수: {total_papers}편").grid(row=0, column=0, padx=10)
         ttk.Label(stats_frame, text=f"저널 수: {len(journals)}개").grid(row=0, column=1, padx=10)
         ttk.Label(stats_frame, text=f"연도 범위: {min(years) if years else 'N/A'}-{max(years) if years else 'N/A'}").grid(row=0, column=2, padx=10)
-        ttk.Label(stats_frame, text=f"카테고리 수: {len(categories)}개").grid(row=0, column=3, padx=10)
+        
+        # 번역 통계 (새로 추가)
+        self.translation_stats_label = ttk.Label(stats_frame, text="")
+        self.translation_stats_label.grid(row=1, column=0, columnspan=2, sticky=tk.W, padx=10, pady=(5, 0))
+        
+        # 언어 토글 버튼 (새로 추가)
+        language_frame = ttk.Frame(stats_frame)
+        language_frame.grid(row=1, column=2, columnspan=2, sticky=tk.E, padx=10, pady=(5, 0))
+        
+        ttk.Label(language_frame, text="초록 언어:").pack(side=tk.LEFT)
+        self.language_var = tk.StringVar(value=self.current_language)
+        
+        korean_radio = ttk.Radiobutton(language_frame, text="한국어", variable=self.language_var, 
+                                     value='korean', command=self.change_language)
+        korean_radio.pack(side=tk.LEFT, padx=(5, 0))
+        
+        english_radio = ttk.Radiobutton(language_frame, text="English", variable=self.language_var,
+                                      value='english', command=self.change_language)
+        english_radio.pack(side=tk.LEFT, padx=(5, 0))
         
         # 필터 섹션
         filter_frame = ttk.LabelFrame(main_frame, text="🔍 필터 및 검색", padding="5")
@@ -224,13 +246,76 @@ class MCIPapersGUI:
             display_categories = [category_display.get(cat, cat) for cat in category_names]
             details.append(f"🏷️ 카테고리: {', '.join(display_categories)}\n")
         
-        # 초록
-        if paper.abstract:
-            details.append(f"📝 초록:\n{paper.abstract}")
+        # 번역 상태 표시 (새로 추가)
+        translation_status = getattr(paper, 'translation_status', 'pending')
+        status_icons = {
+            'pending': '⏳ 번역 대기',
+            'in_progress': '🔄 번역 진행중',
+            'completed': '✅ 번역 완료',
+            'reviewed': '🔍 검토 완료'
+        }
+        details.append(f"🌐 번역 상태: {status_icons.get(translation_status, translation_status)}")
+        
+        if hasattr(paper, 'translation_date') and paper.translation_date:
+            details.append(f" ({paper.translation_date.strftime('%Y-%m-%d')})")
+        details.append("\n")
+        
+        # 초록 (언어별 표시)
+        if self.current_language == 'korean' and hasattr(paper, 'abstract_korean') and paper.abstract_korean:
+            details.append(f"📝 초록 (한국어):\n{paper.abstract_korean}")
+        elif paper.abstract:
+            details.append(f"📝 초록 (English):\n{paper.abstract}")
+        else:
+            details.append("📝 초록: 사용할 수 없음")
+        
+        # 번역자 노트 (있는 경우)
+        if hasattr(paper, 'translator_notes') and paper.translator_notes:
+            details.append(f"\n📎 번역자 노트: {paper.translator_notes}")
         
         # 텍스트 표시
         self.detail_text.delete(1.0, tk.END)
         self.detail_text.insert(1.0, '\n'.join(details))
+    
+    def change_language(self):
+        """언어 설정을 변경하고 현재 표시된 논문 상세 정보를 업데이트합니다."""
+        self.current_language = self.language_var.get()
+        
+        # 현재 선택된 논문이 있으면 상세 정보를 다시 표시
+        selection = self.papers_listbox.curselection()
+        if selection:
+            # 가짜 이벤트 객체 생성하여 show_paper_details 호출
+            class FakeEvent:
+                pass
+            self.show_paper_details(FakeEvent())
+    
+    def update_translation_stats(self):
+        """번역 통계 정보를 업데이트합니다."""
+        try:
+            # 번역 상태별 논문 수 계산
+            translated_count = 0
+            pending_count = 0
+            in_progress_count = 0
+            
+            for paper in self.papers:
+                status = getattr(paper, 'translation_status', 'pending')
+                if status in ['completed', 'reviewed']:
+                    translated_count += 1
+                elif status == 'in_progress':
+                    in_progress_count += 1
+                else:
+                    pending_count += 1
+            
+            total_papers = len(self.papers)
+            translated_percentage = (translated_count / total_papers * 100) if total_papers > 0 else 0
+            
+            stats_text = f"🌐 번역 현황: {translated_count}/{total_papers}편 완료 ({translated_percentage:.1f}%)"
+            if in_progress_count > 0:
+                stats_text += f", {in_progress_count}편 진행중"
+            
+            self.translation_stats_label.config(text=stats_text)
+            
+        except Exception as e:
+            self.translation_stats_label.config(text="🌐 번역 통계를 불러올 수 없습니다")
     
     def open_pubmed(self):
         """PubMed 페이지를 웹브라우저에서 엽니다."""

@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}번역 관리 - MCI 논문 데이터베이스{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="bi bi-translate"></i> 번역 관리</h1>
+        <p class="text-muted">Korean abstract translation workflow management</p>
+    </div>
+</div>
+
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ translation_stats.translated }}</h4>
+                        <p class="mb-0">번역 완료</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-check-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ translation_stats.in_progress }}</h4>
+                        <p class="mb-0">진행 중</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-clock fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ translation_stats.pending }}</h4>
+                        <p class="mb-0">대기 중</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-hourglass fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ translation_stats.percentage }}%</h4>
+                        <p class="mb-0">완료율</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">전체 번역 진행률</h5>
+                <div class="progress mb-3" style="height: 25px;">
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ translation_stats.percentage }}%">
+                        {{ translation_stats.percentage }}%
+                    </div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <strong class="text-success">{{ translation_stats.translated }}</strong><br>
+                        <small class="text-muted">완료</small>
+                    </div>
+                    <div class="col-4">
+                        <strong class="text-warning">{{ translation_stats.in_progress }}</strong><br>
+                        <small class="text-muted">진행중</small>
+                    </div>
+                    <div class="col-4">
+                        <strong class="text-danger">{{ translation_stats.pending }}</strong><br>
+                        <small class="text-muted">대기중</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export/Import Actions -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-download"></i> 번역용 CSV 내보내기
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    번역이 필요한 논문들을 CSV 파일로 내보내어 번역 작업을 진행하세요.
+                </p>
+                
+                <form method="POST" action="{{ url_for('export_translation') }}" class="mb-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="export-limit" class="form-label">내보낼 논문 수</label>
+                            <select name="limit" id="export-limit" class="form-select">
+                                <option value="10">10편</option>
+                                <option value="25">25편</option>
+                                <option value="50" selected>50편</option>
+                                <option value="100">100편</option>
+                                <option value="0">전체</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="export-status" class="form-label">번역 상태</label>
+                            <select name="status" id="export-status" class="form-select">
+                                <option value="pending" selected>대기중</option>
+                                <option value="in_progress">진행중</option>
+                                <option value="all">전체</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-download"></i> CSV 파일 생성 및 다운로드
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="alert alert-info">
+                    <small>
+                        <i class="bi bi-info-circle"></i>
+                        <strong>사용법:</strong> CSV 파일을 다운로드한 후 Excel이나 Google Sheets에서 열어 
+                        'abstract_korean' 열에 한국어 번역을 입력하고 'translation_status'를 'completed'로 변경하세요.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-upload"></i> 번역 결과 가져오기
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    번역이 완료된 CSV 파일을 업로드하여 데이터베이스에 반영하세요.
+                </p>
+                
+                <form method="POST" action="{{ url_for('import_translation') }}" 
+                      enctype="multipart/form-data" id="import-form">
+                    <div class="mb-3">
+                        <label for="csv-file" class="form-label">CSV 파일 선택</label>
+                        <input type="file" name="file" id="csv-file" class="form-control" 
+                               accept=".csv" required>
+                        <div class="form-text">
+                            번역이 완료된 CSV 파일만 업로드하세요. (최대 16MB)
+                        </div>
+                    </div>
+                    
+                    <!-- Drag and Drop Area -->
+                    <div class="upload-area border border-dashed border-2 rounded p-4 text-center mb-3">
+                        <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                        <p class="mt-2 mb-0">파일을 여기에 드래그하거나 클릭하여 선택하세요</p>
+                    </div>
+                    
+                    <div id="file-info"></div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-upload"></i> 번역 결과 업로드
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="alert alert-warning mt-3">
+                    <small>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>주의:</strong> 업로드 전에 CSV 파일의 형식이 올바른지 확인하세요. 
+                        잘못된 데이터는 시스템에 문제를 일으킬 수 있습니다.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Import Files List -->
+{% if import_files %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-files"></i> 업로드 대기 중인 파일들
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>파일명</th>
+                                <th>크기</th>
+                                <th>업로드 시간</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in import_files %}
+                            <tr>
+                                <td>
+                                    <i class="bi bi-file-earmark-text text-primary"></i>
+                                    {{ file }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">CSV</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">업로드 대기</small>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('import_translation') }}" 
+                                          class="d-inline" style="display: none;">
+                                        <input type="hidden" name="filename" value="{{ file }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-upload"></i> 가져오기
+                                        </button>
+                                    </form>
+                                    <small class="text-muted">수동 업로드 사용</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Translation Batches -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> 최근 번역 작업 기록
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_batches %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>배치 ID</th>
+                                <th>내보낸 논문 수</th>
+                                <th>완료된 논문 수</th>
+                                <th>상태</th>
+                                <th>내보낸 날짜</th>
+                                <th>가져온 날짜</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batch in recent_batches %}
+                            <tr>
+                                <td>
+                                    <code>{{ batch.batch_id }}</code>
+                                </td>
+                                <td>{{ batch.total_papers }}</td>
+                                <td>{{ batch.completed_papers }}</td>
+                                <td>
+                                    {% if batch.status == 'imported' %}
+                                        <span class="badge bg-success">가져오기 완료</span>
+                                    {% elif batch.status == 'completed' %}
+                                        <span class="badge bg-info">번역 완료</span>
+                                    {% elif batch.status == 'in_progress' %}
+                                        <span class="badge bg-warning">진행 중</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">내보냄</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ batch.export_date.strftime('%Y-%m-%d %H:%M') if batch.export_date else 'N/A' }}</td>
+                                <td>{{ batch.import_date.strftime('%Y-%m-%d %H:%M') if batch.import_date else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h5 class="mt-3">아직 번역 작업 기록이 없습니다</h5>
+                    <p class="text-muted">
+                        번역용 CSV를 내보내면 여기에 작업 기록이 표시됩니다.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-question-circle"></i> 번역 작업 가이드
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-1-circle text-primary"></i> CSV 내보내기</h6>
+                        <ul class="list-unstyled ms-3">
+                            <li>• 번역할 논문 수와 상태를 선택</li>
+                            <li>• "CSV 파일 생성 및 다운로드" 클릭</li>
+                            <li>• 생성된 CSV 파일을 다운로드</li>
+                        </ul>
+                        
+                        <h6><i class="bi bi-2-circle text-primary"></i> 번역 작업</h6>
+                        <ul class="list-unstyled ms-3">
+                            <li>• Excel이나 Google Sheets에서 CSV 파일 열기</li>
+                            <li>• 'abstract_korean' 열에 한국어 번역 입력</li>
+                            <li>• 'translation_status'를 'completed'로 변경</li>
+                            <li>• 필요시 'translator_notes'에 메모 추가</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-3-circle text-primary"></i> 번역 결과 업로드</h6>
+                        <ul class="list-unstyled ms-3">
+                            <li>• 번역이 완료된 CSV 파일을 저장</li>
+                            <li>• "번역 결과 가져오기"에서 파일 선택</li>
+                            <li>• "번역 결과 업로드" 클릭</li>
+                            <li>• 시스템에서 자동으로 데이터베이스 업데이트</li>
+                        </ul>
+                        
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="bi bi-lightbulb"></i>
+                                <strong>팁:</strong> 대량 번역 작업 시 50편 단위로 나누어 진행하면 
+                                관리가 용이하고 오류 발생 시 영향을 최소화할 수 있습니다.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.querySelector('.upload-area');
+    const fileInput = document.getElementById('csv-file');
+    
+    if (uploadArea && fileInput) {
+        uploadArea.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('bg-primary', 'text-white');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('bg-primary', 'text-white');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('bg-primary', 'text-white');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.csv')) {
+                fileInput.files = files;
+                updateFileInfo(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                updateFileInfo(this.files[0]);
+            }
+        });
+    }
+});
+
+function updateFileInfo(file) {
+    const fileInfo = document.getElementById('file-info');
+    if (fileInfo) {
+        const size = (file.size / 1024).toFixed(1);
+        fileInfo.innerHTML = `
+            <div class="alert alert-success">
+                <i class="bi bi-file-check"></i>
+                <strong>${file.name}</strong> (${size} KB) 선택됨
+            </div>
+        `;
+    }
+}
+</script>
+{% endblock %}

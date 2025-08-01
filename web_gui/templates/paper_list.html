@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}논문 목록 - MCI 논문 데이터베이스{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-journal-text"></i> 논문 목록</h1>
+            <div class="text-muted">
+                총 {{ total_results }}편의 논문
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Section -->
+<div class="filter-section">
+    <form id="filter-form" method="GET" action="{{ url_for('papers_list') }}">
+        <input type="hidden" name="lang" value="{{ language }}">
+        
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="category-filter" class="form-label">카테고리</label>
+                <select name="category" id="category-filter" class="form-select">
+                    <option value="all" {% if current_category == 'all' %}selected{% endif %}>전체</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
+                        {% if category == 'clinical_study' %}🏥 임상연구
+                        {% elif category == 'neuroscience' %}🧬 신경과학
+                        {% elif category == 'biomarker' %}🔬 바이오마커
+                        {% elif category == 'ai_ml' %}🤖 AI/머신러닝
+                        {% elif category == 'imaging' %}📸 이미징
+                        {% elif category == 'cognitive_assessment' %}🧪 인지평가
+                        {% else %}{{ category }}
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label for="year-filter" class="form-label">발행연도</label>
+                <select name="year" id="year-filter" class="form-select">
+                    <option value="all" {% if current_year == 'all' %}selected{% endif %}>전체</option>
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if current_year == year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label for="translation-filter" class="form-label">번역상태</label>
+                <select name="translation" id="translation-filter" class="form-select">
+                    <option value="all" {% if current_translation == 'all' %}selected{% endif %}>전체</option>
+                    <option value="translated" {% if current_translation == 'translated' %}selected{% endif %}>번역완료</option>
+                    <option value="in_progress" {% if current_translation == 'in_progress' %}selected{% endif %}>진행중</option>
+                    <option value="pending" {% if current_translation == 'pending' %}selected{% endif %}>대기중</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="search-input" class="form-label">검색</label>
+                <input type="text" name="search" id="search-input" class="form-control" 
+                       placeholder="제목, 초록, 저자 검색..." value="{{ search_query }}">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="button" id="clear-filters" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> 초기화
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Results Section -->
+{% if papers %}
+<div class="row">
+    {% for paper in papers %}
+    <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card paper-card h-100">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <a href="{{ url_for('paper_detail', paper_id=paper.id, lang=language) }}" 
+                       class="paper-title text-decoration-none">
+                        {{ paper.title }}
+                    </a>
+                </h6>
+                
+                <div class="paper-meta mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-journal"></i> {{ paper.journal_name }}
+                        </small>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar"></i> {{ paper.publication_year }}
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Categories -->
+                {% if paper.categories %}
+                <div class="mb-2">
+                    {% for category in paper.categories %}
+                    <span class="badge 
+                        {% if category.name == 'clinical_study' %}bg-primary
+                        {% elif category.name == 'neuroscience' %}bg-success
+                        {% elif category.name == 'biomarker' %}bg-info
+                        {% elif category.name == 'ai_ml' %}bg-warning text-dark
+                        {% elif category.name == 'imaging' %}bg-danger
+                        {% elif category.name == 'cognitive_assessment' %}bg-secondary
+                        {% else %}bg-light text-dark
+                        {% endif %} me-1">
+                        {% if category.name == 'clinical_study' %}🏥 임상연구
+                        {% elif category.name == 'neuroscience' %}🧬 신경과학
+                        {% elif category.name == 'biomarker' %}🔬 바이오마커
+                        {% elif category.name == 'ai_ml' %}🤖 AI/ML
+                        {% elif category.name == 'imaging' %}📸 이미징
+                        {% elif category.name == 'cognitive_assessment' %}🧪 인지평가
+                        {% else %}{{ category.name }}
+                        {% endif %}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Abstract Preview -->
+                <div class="paper-abstract mb-3">
+                    {% if language == 'korean' and paper.abstract_korean %}
+                        {{ paper.abstract_korean[:200] }}{% if paper.abstract_korean|length > 200 %}...{% endif %}
+                    {% elif paper.abstract %}
+                        {{ paper.abstract[:200] }}{% if paper.abstract|length > 200 %}...{% endif %}
+                    {% else %}
+                        <em class="text-muted">초록이 없습니다.</em>
+                    {% endif %}
+                </div>
+                
+                <!-- Translation Status -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="translation-status 
+                        {% set status = paper.translation_status if paper.translation_status else 'pending' %}
+                        {% if status == 'completed' or status == 'reviewed' %}completed
+                        {% elif status == 'in_progress' %}in-progress
+                        {% else %}pending
+                        {% endif %}">
+                        
+                        {% if status == 'completed' or status == 'reviewed' %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>번역완료</span>
+                        {% elif status == 'in_progress' %}
+                            <i class="bi bi-clock-fill text-warning"></i>
+                            <span>진행중</span>
+                        {% else %}
+                            <i class="bi bi-circle text-muted"></i>
+                            <span>대기중</span>
+                        {% endif %}
+                    </div>
+                    
+                    <small class="text-muted">
+                        PMID: {{ paper.pmid }}
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('paper_detail', paper_id=paper.id, lang=language) }}" 
+                       class="btn btn-sm btn-outline-primary flex-fill">
+                        <i class="bi bi-eye"></i> 상세보기
+                    </a>
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/{{ paper.pmid }}/" 
+                       target="_blank" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-box-arrow-up-right"></i> PubMed
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination (Future Enhancement) -->
+{% if papers|length >= 50 %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-primary" onclick="loadMorePapers()">
+                <i class="bi bi-arrow-down-circle"></i> 더 많은 논문 보기
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<!-- No Results -->
+<div class="row">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="bi bi-search display-1 text-muted"></i>
+            <h3 class="mt-3">검색 결과가 없습니다</h3>
+            <p class="text-muted">
+                다른 검색어나 필터 조건을 시도해보세요.
+            </p>
+            <button type="button" id="clear-filters" class="btn btn-primary">
+                <i class="bi bi-arrow-clockwise"></i> 필터 초기화
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Floating Action Button for Export -->
+{% if papers %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div class="btn-group dropup">
+        <button type="button" class="btn btn-success rounded-circle" 
+                data-bs-toggle="dropdown" aria-expanded="false"
+                data-bs-toggle="tooltip" title="번역 관리">
+            <i class="bi bi-translate fs-5"></i>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item" href="{{ url_for('translation_management') }}">
+                    <i class="bi bi-download"></i> 번역용 CSV 내보내기
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('translation_management') }}">
+                    <i class="bi bi-upload"></i> 번역 결과 가져오기
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('papers_list', translation='pending') }}">
+                    <i class="bi bi-clock"></i> 번역 대기 논문만 보기
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function loadMorePapers() {
+    // Future enhancement: AJAX pagination
+    console.log('Load more papers...');
+}
+
+// Auto-submit form when filters change
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filter-form');
+    const filterInputs = filterForm.querySelectorAll('select');
+    
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            filterForm.submit();
+        });
+    });
+    
+    // Submit form on Enter in search input
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterForm.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

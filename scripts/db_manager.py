@@ -4,7 +4,7 @@ import logging
 from typing import List, Dict, Any
 from datetime import datetime
 
-from scripts.database import Paper, Author, Category, init_db
+from scripts.database_korean import Paper, Author, Category, init_db
 from scripts.logger import setup_logging
 from scripts.categorizer import PaperCategorizer
 
