@@ -1,10 +1,36 @@
 categories:
+  clinical_study:
+    keywords:
+      - clinical
+      - patient
+      - caregiver
+      - care
+      - intervention
+      - treatment
+      - therapy
+      - rehabilitation
+  
+  neuroscience:
+    keywords:
+      - hippocampal
+      - prefrontal
+      - neural
+      - brain
+      - neuron
+      - synaptic
+      - cortex
+      - amygdala
+  
   biomarker:
     keywords:
       - biomarker
       - blood marker
       - csf marker
       - plasma marker
+      - protein
+      - tau
+      - amyloid
+      - neurofilament
   
   ai_ml:
     keywords:
@@ -12,22 +38,28 @@ categories:
       - deep learning
       - artificial intelligence
       - neural network
+      - algorithm
+      - prediction
   
-  adni:
-    keywords:
-      - ADNI
-      - Alzheimer's Disease Neuroimaging Initiative
-  
-  mri:
+  imaging:
     keywords:
       - MRI
       - magnetic resonance imaging
       - structural MRI
       - functional MRI
+      - neuroimaging
+      - imaging
+      - scan
   
-  big_data:
+  cognitive_assessment:
     keywords:
-      - big data
+      - cognitive
+      - memory
+      - assessment
+      - test
+      - evaluation
+      - screening
+      - diagnosis
       - large scale
       - population study
       - cohort study

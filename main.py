@@ -65,10 +65,13 @@ class MCIPapersPipeline:
             # 블로그 포스트 생성
             from scripts.blog_generator import generate_blog_post
             categories = list(self.db_manager.get_all_categories())
+            latest_papers = self.db_manager.get_all_papers()[-20:]  # 최신 20개 논문
+            
             blog_post = generate_blog_post(
                 trend_report=report,
                 date=current_date,
-                categories=categories
+                categories=categories,
+                papers=latest_papers
             )
             
             # 블로그 포스트 저장

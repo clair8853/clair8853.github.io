@@ -114,4 +114,15 @@ class DatabaseManager:
         finally:
             session.close()
 
+    def get_all_papers(self):
+        """모든 논문 정보를 조회합니다."""
+        session = self.Session()
+        try:
+            papers = session.query(Paper).all()
+            return papers
+        except Exception as e:
+            self.logger.error(f"Error retrieving all papers: {str(e)}")
+            return []
+        finally:
+            session.close()
 

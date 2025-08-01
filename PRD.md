@@ -1,107 +1,59 @@
-# MCI P## 1. Background
-Research teams stud### 5.1 Functional
-1. Daily 07:00 JST cron job → fetch newest paper (PubMed API) matching keyword set with flexible date range.
-2. Extract metadata + abstract from papers.
-3. Append to `mci_daily.csv` and `mci_papers.db`.
-4. Categorise using `category_rules.yaml`.
-5. Generate category trend analysis and visualizations.
-6. Blog auto‑deploy via GitHub Actions (`deploy.yml`).ld Cognitive Impairment (MCI) need up‑to‑date literature but manual tracking is time‑consuming.  
-This project automates daily retrieval and categorisation of MCI‑related PubMed papers, storing results in CSV/SQLite and publishing weekly digests to a Hugo (PaperMod) blog.
+# MCI Papers Study Blog – Product Requirements Document (PRD)
 
-## 2. Goals
-| Goal | Success Metric |
-|------|---------------|
-| Deliver fresh MCI paper data every morning | Daily scheduler success ≥ 99 % /30 days |
-| Enable easy browsing & trend analysis | Hugo site auto‑deploy within 5 min of commit |
-| Zero recurring cost to operate | No paid APIs or cloud services |er & Summarizer – Product Requirements Document (PRD)
-
-**Version**: 0.6  
-**Last updated**: 2025-07-31
+**Version**: 1.0  
+**Last updated**: 2025-08-01
 
 ---
 
 ## 1. Background
-Research teams studying Mild Cognitive Impairment (MCI) need up‑to‑date literature but manual tracking is time‑consuming.  
-This project automates daily retrieval, summarisation and categorisation of MCI‑related PubMed papers, storing results in CSV/SQLite and publishing weekly digests to a Hugo (PaperMod) blog.
+연구자들과 학생들이 Mild Cognitive Impairment (MCI) 분야의 최신 연구 동향을 파악하고 공부하는 것은 시간이 많이 소요됩니다.  
+이 프로젝트는 PubMed에서 MCI 관련 논문을 자동으로 수집, 요약, 분류하여 **읽기 쉬운 블로그 형태로 제공**함으로써 **학습 환경을 구축**하는 것을 목표로 합니다.
 
 ## 2. Goals
 | Goal | Success Metric |
 |------|---------------|
-| Deliver fresh MCI paper data every morning | Daily scheduler success ≥ 99 % /30 days |
-| Provide concise abstracts and summaries | ROUGE‑L ≥ 30 on monthly 30‑sample audit |
-| Enable easy browsing & trend analysis | Hugo site auto‑deploy within 5 min of commit |
-| Zero recurring cost to operate | No paid APIs or cloud services |
+| 매일 새로운 MCI 논문 학습 컨텐츠 제공 | 일일 블로그 업데이트 성공률 ≥ 99% |
+| 논문 내용을 쉽게 이해할 수 있는 요약 제공 | 사용자 만족도 조사 결과 4.0/5.0 이상 |
+| 카테고리별 트렌드를 통한 분야 이해 지원 | 월별 방문자 수 증가율 ≥ 10% |
+| 비용 없이 운영 | 무료 서비스만 사용 |
 
 ### Non‑Goals
-* Automatic Korean translation accuracy – handled manually.
-* GUI frontend (planned post‑MVP).
+* 전체 논문 전문 번역 (요약 중심)
+* 실시간 알림 기능 (추후 고려)
 
 ## 3. Personas
-* **Researcher** – needs daily updates and keyword trends.
-* **Data Scientist** – wants CSV/DB access for further analysis.
-* **Student** – reads blog digests to follow the field.
+* **대학원생** – MCI 연구 분야 학습을 위한 최신 동향 파악 필요
+* **연구자** – 빠른 논문 스크리닝과 트렌드 분석 필요
+* **의료진** – 임상 관련 MCI 연구 동향 파악 필요
 
 ## 4. User Stories
-1. As a *researcher*, I enter keywords and receive a CSV with today’s MCI papers.
-2. As a *data scientist*, I run `python analyzer.py --trend` to plot monthly keyword frequencies.
-3. As a *student*, I open the blog each week to read curated summaries.
+1. **대학원생으로서**, 매일 블로그를 방문하여 새로운 MCI 논문의 핵심 내용을 쉽게 파악하고 싶다.
+2. **연구자로서**, 카테고리별 연구 트렌드를 시각적으로 확인하여 연구 방향을 설정하고 싶다.
+3. **의료진으로서**, 임상과 관련된 최신 MCI 연구 결과를 간단히 요약된 형태로 읽고 싶다.
 
 ## 5. Requirements
 ### 5.1 Functional
-1. Daily 07:00 JST cron job → fetch newest paper (PubMed API) matching keyword set.
-2. Extract metadata + abstract → summarise with local **pegasus‑pubmed**.
-3. Append to `mci_daily.csv` and `mci_papers.db`.
-4. Categorise using `category_rules.yaml`.
-5. Generate/update keyword‑trend figures on demand.
-6. Blog auto‑deploy via GitHub Actions (`deploy.yml`).
+1. 매일 07:00 JST에 PubMed에서 새로운 MCI 관련 논문 자동 수집
+2. 논문 제목, 초록을 한국어로 요약하여 이해하기 쉽게 제공
+3. 논문을 주제별 카테고리로 자동 분류
+4. 카테고리별 트렌드 차트 및 분석 제공
+5. Hugo 블로그를 통한 깔끔한 웹 인터페이스 제공
+6. GitHub Actions를 통한 자동 배포
 
-### 5.2 Non‑Functional
-* Processing 1 paper < 30 s on RTX 3060.
-* PubMed API usage within 3 requests/day (safe).
-* Code licensed MIT, runs offline (no internet dependency after download).
+### 5.2 Content Requirements
+1. **논문 요약**: 각 논문의 핵심 내용을 3-5문장으로 요약
+2. **카테고리 분류**: 임상연구, 신경과학, 바이오마커, AI/ML, 이미징, 인지평가
+3. **트렌드 분석**: 월별/주별 카테고리별 논문 수 변화
+4. **접근성**: 전문 지식이 없어도 이해할 수 있는 설명
 
-## 6. System Architecture
-```mermaid
-flowchart TD
-    A[Scheduler (cron/APScheduler)] --> B[PubMed Crawler]
-    B --> C[Parser]
-    C --> D[Summariser<br/>(pegasus-pubmed)]
-    D --> E[Analyzer<br/>(keywords, category)]
-    E --> F[Exporter<br/>CSV + SQLite]
-    F --> G[Blog Generator<br/>(markdown)]
-    G --> H[GitHub Actions Deploy]
-```
+## 6. Success Metrics
+* 일일 블로그 업데이트 성공률 ≥ 99%
+* 논문 요약의 정확성과 이해도
+* 월별 방문자 수 및 페이지 뷰
+* 사용자 체류 시간
 
-## 7. Schedule (16‑week roadmap)
-| Weeks | Milestone |
-|-------|-----------|
-| 1‑2 | Repo init, env setup |
-| 3‑4 | PubMed crawler MVP |
-| 5‑6 | Parser & data model |
-| 7‑8 | Scheduler integration |
-| 9‑10 | Keyword analyzer |
-| 11‑12 | Summariser (pegasus‑pubmed) |
-| 13‑14 | Trend visualiser & blog generator |
-| 15 | Integration & tests |
-| 16 | Docs, release v0.9 |
-
-## 8. Success Metrics
-* Daily job success ≥ 99 %
-* ROUGE‑L ≥ 30 on audits
-* Processing 500‑paper batch ≤ 1 min
-* Blog deploy latency ≤ 5 min
-
-## 9. Risks & Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| PubMed API change | Job fails | Graceful retry & update parser |
-| GPU unavailable | Slow summaries | Fallback to TextRank |
-| Model hallucination | Wrong summaries | Monthly manual review |
-
-## 10. Future Roadmap
-* GUI (Streamlit) dashboard
-* Figure OCR + caption summarisation
-* Automatic Korean translation using fine‑tuned NLLB
-* Slack/email notifications
-
----
+## 7. Future Roadmap
+* 논문 전문 번역 기능
+* 사용자 맞춤형 키워드 알림
+* 모바일 앱 개발
+* 논문 북마크 및 개인 학습 노트 기능

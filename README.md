@@ -1,71 +1,69 @@
-# MCI Papers Crawler
+# MCI Papers Study Blog
 
-Automated pipeline to **crawl and categorise** Mild Cognitive Impairment (MCI) papers from PubMed every day, store them in CSV/SQLite, and publish weekly digests to a Hugo (PaperMod) blog.
+**MCI 연구 논문을 매일 자동으로 수집하여 읽기 쉽게 정리해주는 학습용 블로그입니다.**
 
-## Features
-* ✅ Daily 07:00 JST crawl of the latest MCI‑related paper
-* ✅ Keyword categorisation (Biomarker, AI/ML, ADNI, MRI, Big‑Data)
-* ✅ Trend visualisation on demand
-* ✅ Static blog deployment via GitHub Actions (`mci-papers` repo)rs Crawler & Summarizer
+## 🎯 프로젝트 목적
+- **학습 환경 제공**: MCI 분야 최신 연구를 쉽게 공부할 수 있는 환경 구축
+- **논문 요약**: 복잡한 논문 내용을 3-5문장으로 핵심만 정리
+- **트렌드 분석**: 카테고리별 연구 동향을 시각적으로 제공
+- **접근성**: 전문 지식이 없어도 이해할 수 있는 설명
 
-Automated pipeline to **crawl, summarise and categorise** Mild Cognitive Impairment (MCI) papers from PubMed every day, store them in CSV/SQLite, and publish weekly digests to a Hugo (PaperMod) blog.
+## 📚 블로그 내용
+* **일일 논문 요약**: 매일 새로운 MCI 관련 논문의 핵심 내용
+* **카테고리별 분류**: 임상연구, 신경과학, 바이오마커, AI/ML, 이미징, 인지평가
+* **연구 트렌드**: 월별/주별 카테고리별 논문 수 변화 분석
+* **논문 링크**: PubMed 원문 바로가기 제공
 
-## Features
-* ✅ Daily 07:00 JST crawl of the latest MCI‑related paper
-* ✅ Local summarisation with `google/pegasus-pubmed` (requires GPU)
-* ✅ Keyword categorisation (Biomarker, AI/ML, ADNI, MRI, Big‑Data)
-* ✅ Trend visualisation on demand
-* ✅ Static blog deployment via GitHub Actions (`mci-papers` repo)
+## 🌐 블로그 접속
+👉 **[MCI Papers Study Blog 바로가기](https://clair8853.github.io)**
 
-## Installation
-```bash
-# Clone repository
-git clone https://github.com/yourname/mci-papers.git
-cd mci-papers
+## 📊 업데이트 일정
+- **자동 업데이트**: 매일 오전 7시 (JST) 새로운 논문 수집 및 요약
+- **트렌드 분석**: 주간 단위로 카테고리별 동향 업데이트
 
-# Create Python 3.11 venv
-python -m venv .venv && source .venv/bin/activate
+## 🎓 대상 사용자
+- **대학원생**: MCI 연구 분야 학습자
+- **연구자**: 빠른 논문 스크리닝이 필요한 분
+- **의료진**: 임상 관련 최신 연구 동향을 파악하고 싶은 분
 
-# Install dependencies
-pip install -r requirements.txt
+## 💡 주요 특징
+- ✅ **무료**: 모든 서비스 무료 제공
+- ✅ **자동화**: 수동 작업 없이 매일 자동 업데이트
+- ✅ **한국어**: 이해하기 쉬운 한국어 요약 제공
+- ✅ **모바일 친화적**: 반응형 웹 디자인으로 모바일에서도 편리하게 이용
+
+---
+
+## 기술적 세부사항 (개발자용)
+
+### 시스템 구조
+```
+PubMed API → 논문 수집 → 카테고리 분류 → 요약 생성 → Hugo 블로그 → GitHub Pages
 ```
 
-Hardware: NVIDIA RTX 3060 12 GB (or better) recommended.
-
-## Quick Start
-```bash
-# One‑off crawl & summary
-python main.py --crawl --keywords config/keywords.txt
-
-# Generate keyword trend charts
-python analyzer.py --trend --months 12
-```
-
-Cron example (Ubuntu):
-```cron
-0 7 * * * /home/user/mci-papers/.venv/bin/python /home/user/mci-papers/main.py --daily
-```
-
-## Configuration
-* **config/category_rules.yaml** – keyword→category mapping  
-* **config/config.yaml** – scheduler time, paths  
-* **deploy.yml** – GitHub Actions workflow for Hugo blog
-
-## Folder Structure
+### 폴더 구조
 ```
 mci-papers/
-├── data/                 # CSV & SQLite outputs
-├── scripts/              # CLI modules
-├── config/               # YAML configs
-├── blog/                 # Hugo site source
-├── .github/workflows/    # deploy.yml
-└── README.md
+├── blog/                 # Hugo 블로그 소스
+├── scripts/              # Python 스크립트들
+├── config/               # 설정 파일들
+├── data/                 # 데이터베이스 (로컬)
+└── .github/workflows/    # 자동 배포 설정
 ```
 
-## License
-MIT – see `LICENSE`.
+### 설치 및 실행 (개발자용)
+```bash
+# 저장소 클론
+git clone https://github.com/clair8853/clair8853.github.io.git
+cd clair8853.github.io
 
-## Acknowledgements
-* PubMed API
-* HuggingFace Transformers & `google/pegasus-pubmed`
-* PaperMod Hugo theme
+# 파이썬 가상환경 설정
+python -m venv .venv
+.venv\Scripts\activate
+
+# 의존성 설치
+pip install -r requirements.txt
+
+# 일일 업데이트 실행
+python main.py --daily
+```
