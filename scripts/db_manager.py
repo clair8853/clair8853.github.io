@@ -118,7 +118,13 @@ class DatabaseManager:
         """모든 논문 정보를 조회합니다."""
         session = self.Session()
         try:
-            papers = session.query(Paper).all()
+            from sqlalchemy.orm import joinedload
+            # relationships를 함께 로드
+            papers = session.query(Paper).options(
+                joinedload(Paper.categories),
+                joinedload(Paper.authors)
+            ).all()
+            
             return papers
         except Exception as e:
             self.logger.error(f"Error retrieving all papers: {str(e)}")
