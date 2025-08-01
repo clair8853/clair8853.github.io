@@ -1,0 +1,33 @@
+categories:
+  biomarker:
+    keywords:
+      - biomarker
+      - blood marker
+      - csf marker
+      - plasma marker
+  
+  ai_ml:
+    keywords:
+      - machine learning
+      - deep learning
+      - artificial intelligence
+      - neural network
+  
+  adni:
+    keywords:
+      - ADNI
+      - Alzheimer's Disease Neuroimaging Initiative
+  
+  mri:
+    keywords:
+      - MRI
+      - magnetic resonance imaging
+      - structural MRI
+      - functional MRI
+  
+  big_data:
+    keywords:
+      - big data
+      - large scale
+      - population study
+      - cohort study

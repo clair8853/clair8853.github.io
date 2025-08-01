@@ -1,0 +1,23 @@
+scheduler:
+  time: "07:00"
+  timezone: "Asia/Tokyo"
+
+paths:
+  data: "data"
+  csv_output: "data/mci_daily.csv"
+  db_output: "data/mci_papers.db"
+  blog: "blog"
+
+pubmed:
+  api_base_url: "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+  api_key: "676cb7b6b903a3ad7ba9cce2d6401a0b3a09"
+  max_requests_per_day: 10
+  retry_attempts: 3
+  retry_delay: 60
+  tool_name: "mci_paper_crawler"
+  email: "j.rho@mcbi.co.jp"
+
+summarizer:
+  model: "google/pegasus-pubmed"
+  max_length: 256
+  batch_size: 4
