@@ -7,6 +7,38 @@ __pycache__/
 venv/
 ENV/
 
+# Test files
+test_*.py
+*_test.py
+final_verification.py
+test_complete.py
+test_gui_detailed.py
+
+# Logs and reports
+*.log
+*_log.txt
+*_report.html
+*_REPORT.md
+COMPLETE_REPORT.md
+FINAL_REPORT.md
+
+# Generated output
+output/
+logs/
+
+# Archive folder
+archive/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Development files
+PROJECT_ROADMAP.md
+cleanup_analysis.md
+cleanup_project.py
+project_enhancement_log.txt
+
 # VS Code
 .vscode/
 *.code-workspace
