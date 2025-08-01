@@ -32,10 +32,11 @@ jobs:
           PUBMED_EMAIL: ${{ secrets.PUBMED_EMAIL }}
         run: |
           python main.py --daily
-          mkdir -p blog/content/posts/
-          mkdir -p blog/static/images/
-          cp output/trend_report_*.md blog/content/posts/ || echo "No trend reports to copy"
-          cp output/*_*.png blog/static/images/ || echo "No images to copy"
+          python step6_test_blog.py
+          mkdir -p site/content/posts/
+          mkdir -p site/static/images/
+          cp output/mci-blog-*.md site/content/posts/ || echo "No blog posts to copy"
+          cp output/*_*.png site/static/images/ || echo "No images to copy"
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
@@ -44,14 +45,14 @@ jobs:
           extended: true
 
       - name: Build
-        working-directory: ./blog
+        working-directory: ./site
         run: hugo --minify
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GIT_HUB_TOKEN }}
-          publish_dir: ./blog/public
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site/public
           publish_branch: gh-pages
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
